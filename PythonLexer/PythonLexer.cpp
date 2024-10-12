@@ -102,7 +102,7 @@ int main()
 	std::string text = buffer.str();
 
 	auto l = python::init();
-	if (!l.insert("<lexem>", "(<string_literal>|<bytes_literal>|<comment>|<identifier>|<keywords>|<forbidden>|<imag_number>|<float_number>|<delimeters>|<operators>|<bin_integer>|<oct_integer>|<hex_integer>|<dec_integer>)")) {
+	if (!l.insert("<lexem>", "(<string_literal>|<comment>|<keywords>|<identifier>|<forbidden>|<imag_number>|<float_number>|<delimeters>|<operators>|<bin_integer>|<oct_integer>|<hex_integer>|<dec_integer>)")) {
 		std::cerr << "Could not insert <lexem>" << std::endl;
 		return -1;
 	}
@@ -111,7 +111,6 @@ int main()
 	auto matches = lexem.match(text);
 	std::cout << "Found " << matches.size() << std::endl;
 	std::cout << colorize(text, matches);
-
 #endif
 }
 

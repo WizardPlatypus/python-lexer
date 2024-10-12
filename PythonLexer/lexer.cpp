@@ -18,7 +18,7 @@ std::string colorize(const std::string& text, std::vector<Match>& matches) {
 			}
 		}
 		buffer << text.substr(cursor, m.pos - cursor);
-		buffer << format(text.substr(m.pos, m.len), 39, bg[m.label]);
+		buffer << format(text.substr(m.pos, m.len), (int)ansi::fg::iso::DEFAULT, bg[m.label]);
 		cursor = m.pos + m.len;
 	}
 	if (cursor < text.size()) {
@@ -198,15 +198,17 @@ void python::add_strings(Lexer& l) {
 	l.insert("<string_prefix>", "(r|u|R|U|f|F|fr|Fr|fR|FR|rf|rF|Rf|RF)");
 	l.insert("<string_escape_seq>", "(\\\\.)");
 
-	l.insert("<short_string_char>", R"(([^\\\n\r"]))");
-	l.insert("<short_string_item>", "(<short_string_char>|<string_escape_seq>)");
+	// l.insert("<short_string_char>", R"(([^\\\n\r"]))");
+	// l.insert("<short_string_item>", "(<short_string_char>|<string_escape_seq>)");
+	l.insert("<short_string_item>", R"(([^\\\n\r"]|\\.))");
 	l.insert("<short_string>", "('<short_string_item>*'|\"<short_string_item>*\")");
 
-	l.insert("<long_string_char>", R"(([^\\]))");
-	l.insert("<long_string_item>", "(<long_string_char>|<string_escape_seq>)");
+	// l.insert("<long_string_char>", R"(([^\\]))");
+	// l.insert("<long_string_item>", "(<long_string_char>|<string_escape_seq>)");
+	l.insert("<long_string_item>", R"(([^\\]|\\.))");
 	l.insert("<long_string>", "('''<long_string_item>*'''|\"\"\"<long_string_item>*\"\"\")");
 
-	l.insert("<string_literal>", "(<string_prefix>?(<short_string>|<long_string>))");
+	l.insert("<string_literal>", "(<string_prefix>?(<long_string>|<short_string>))");
 
 	/* Byte strings
 	bytesprefix    ::=  "b" | "B" | "br" | "Br" | "bR" | "BR" | "rb" | "rB" | "Rb" | "RB"
@@ -222,22 +224,26 @@ void python::add_strings(Lexer& l) {
 
 	bytesliteral   ::=  bytesprefix(shortbytes | longbytes)
 	*/
+	/*
 	l.insert("<bytes_prefix>", "(b|B|br|Br|bR|BR|rb|rB|Rb|RB)");
 	l.insert("<bytes_escape_seq>", "(\\\\.)");
 
-	l.insert("<short_bytes_char>", R"(([^\\\n\r"]))");
-	l.insert("<short_bytes_item>", "(<short_bytes_char>|<bytes_escape_seq>)");
+	// l.insert("<short_bytes_char>", R"(([^\\\n\r"]))");
+	// l.insert("<short_bytes_item>", "(<short_bytes_char>|<bytes_escape_seq>)");
+	l.insert("<short_bytes_item>", R"(([^\\\n\r"]|\\.))");
 	l.insert("<short_bytes>", "('<short_bytes_item>*'|\"<short_bytes_item>*\")");
 
-	l.insert("<long_bytes_char>", R"(([^\\]))");
-	l.insert("<long_bytes_item>", "(<long_bytes_char>|<bytes_escape_seq>)");
+	// l.insert("<long_bytes_char>", R"(([^\\]))");
+	// l.insert("<long_bytes_item>", "(<long_bytes_char>|<bytes_escape_seq>)");
+	l.insert("<long_bytes_item>", R"(([^\\]|\\.))");
 	l.insert("<long_bytes>", "('''<long_bytes_item>*'''|\"\"\"<long_bytes_item>*\"\"\")");
 
-	l.insert("<bytes_literal>", "(<bytes_prefix>?(<short_bytes>|<long_bytes>))");
+	l.insert("<bytes_literal>", "(<bytes_prefix>?(<long_bytes>|<short_bytes>))");
+	// */
 }
 
 void python::add_reserved(Lexer& l) {
-	l.insert("<keywords>", "(False|await|else|import|pass|None|break|except|in|raise|True|class|finally|is|return|and|continue|for|lambda|try|as|def|from|nonlocal|while|assert|del|global|not|with|async|elif|if|or|yield)");
+	l.insert("<keywords>", "(\\b(False|await|else|import|pass|None|break|except|in|raise|True|class|finally|is|return|and|continue|for|lambda|try|as|def|from|nonlocal|while|assert|del|global|not|with|async|elif|if|or|yield)\\b)");
 	l.insert("<operators>", R"((\+|-|\*|\*\*|/|//|%|@|<<|>>|&|\||\^|~|:=|<|>|<=|>=|==|!=))");
 	l.insert("<delimeters>", R"((\(|\)|\[|\]|\{|\}|,|:|!|\.|;|@|=|->|\+=|-=|\*=|/=|//=|%=|@=|&=|\|=|\^=|>>=|<<=|\*\*=))");
 	l.insert("<forbidden>", R"((\$|\?))");
@@ -247,6 +253,6 @@ void python::add_reserved(Lexer& l) {
 void python::add_identifiers(Lexer& l) {
 	l.insert("<id_start>", "[a-zA-Z_]");
 	l.insert("<id_continue>", "[0-9a-zA-z_]");
-	l.insert("<identifier>", "(<id_start><id_continue>*)");
+	l.insert("<identifier>", "(\\b<id_start><id_continue>*\\b)");
 }
 
