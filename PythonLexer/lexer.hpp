@@ -2,32 +2,43 @@
 #include <vector>
 #include <unordered_map>
 #include <regex>
-#include <iostream>
+
+struct Match {
+	std::string label;
+	long long pos;
+	long long len;
+};
+
+std::string colorize(const std::string&, std::vector<Match>&);
 
 struct Anchor {
-    std::string name;
-    long long pos;
+	std::string name;
+	long long pos;
 };
 
 class Lexem {
 public:
-    std::string spec;
-    std::string regex;
-    std::regex x;
-    std::vector<Anchor> anchors;
+	std::string spec;
+	std::string regex;
+	std::regex x;
+	std::vector<Anchor> anchors;
+	std::vector<Match> match(std::string);
 };
 
 class Lexer {
 public:
-    Lexer();
-    bool insert(std::string, std::string);
-    Lexem& operator[](std::string);
+	Lexer();
+	bool insert(std::string, std::string);
+	Lexem& operator[](std::string);
 private:
-    std::unordered_map<std::string, Lexem> lexems;
+	std::unordered_map<std::string, Lexem> lexems;
 };
 
-void add_integers(Lexer&);
-void add_float_numbers(Lexer&);
-void add_strings(Lexer&);
-void add_reserved(Lexer&);
-void add_identifiers(Lexer&);
+namespace python {
+	Lexer init();
+	void add_integers(Lexer&);
+	void add_float_numbers(Lexer&);
+	void add_strings(Lexer&);
+	void add_reserved(Lexer&);
+	void add_identifiers(Lexer&);
+}

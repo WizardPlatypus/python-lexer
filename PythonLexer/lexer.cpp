@@ -1,5 +1,31 @@
 #include "lexer.hpp"
-#include <iostream>
+#include "escape.hpp"
+#include <sstream>
+
+std::string colorize(const std::string& text, std::vector<Match>& matches) {
+	std::unordered_map<std::string, int> bg;
+	int bg_min = 41;
+	int bg_max = 46;
+	int bg_offset = 0;
+	int cursor = 0;
+	std::ostringstream buffer;
+	for (const auto& m : matches) {
+		if (!bg.contains(m.label)) {
+			bg[m.label] = bg_min + bg_offset;
+			bg_offset += 1;
+			if (bg_min + bg_offset > bg_max) {
+				bg_offset = 0;
+			}
+		}
+		buffer << text.substr(cursor, m.pos - cursor);
+		buffer << format(text.substr(m.pos, m.len), 39, bg[m.label]);
+		cursor = m.pos + m.len;
+	}
+	if (cursor < text.size()) {
+		buffer << text.substr(cursor);
+	}
+	return buffer.str();
+}
 
 Lexer::Lexer() {
 	std::unordered_map<std::string, Lexem> empty;
@@ -55,17 +81,48 @@ bool Lexer::insert(std::string name, std::string spec) {
 	}
 
 	std::regex x(regex);
-	this->lexems[name] = Lexem { spec, regex, x, anchors };
+	this->lexems[name] = Lexem{ spec, regex, x, anchors };
 
 	return true;
+}
+
+std::vector<Match> Lexem::match(std::string text) {
+	auto xbegin = std::sregex_iterator(text.begin(), text.end(), this->x);
+	auto xend = std::sregex_iterator();
+
+	std::vector<Match> matches;
+
+	for (auto i = xbegin; i != xend; ++i) {
+		std::smatch match = *i;
+		for (auto a : this->anchors) {
+			if (!match[a.pos].matched) {
+				continue;
+			}
+			matches.push_back(Match{ a.name, match.position(), match.length() });
+			break;
+		}
+	}
+
+	return matches;
 }
 
 Lexem& Lexer::operator[](std::string name) {
 	return this->lexems[name];
 }
 
-void add_integers(Lexer& l) {
-    /* Integer literals
+Lexer python::init() {
+	Lexer l;
+	python::add_integers(l);
+	python::add_float_numbers(l);
+	python::add_strings(l);
+	python::add_reserved(l);
+	python::add_identifiers(l);
+	return l;
+}
+
+
+void python::add_integers(Lexer& l) {
+	/* Integer literals
 	nonzerodigit ::=  "1"..."9"
 	digit        ::=  "0"..."9"
 	decinteger   ::=  nonzerodigit (["_"] digit)* | "0"+ (["_"] "0")*
@@ -79,26 +136,26 @@ void add_integers(Lexer& l) {
 	hexdigit     ::=  digit | "a"..."f" | "A"..."F"
 	hexinteger   ::=  "0" ("x" | "X") (["_"] hexdigit)+
 
-    integer      ::=  decinteger | bininteger | octinteger | hexinteger
-    */
-    l.insert("<non_zero_digit>", "([1-9])");
-    l.insert("<digit>", "([0-9])");
-    l.insert("<dec_integer>", "(<non_zero_digit>(_?<digit>)*|0+(_?0)*)");
+	integer      ::=  decinteger | bininteger | octinteger | hexinteger
+	*/
+	l.insert("<non_zero_digit>", "([1-9])");
+	l.insert("<digit>", "([0-9])");
+	l.insert("<dec_integer>", "(<non_zero_digit>(_?<digit>)*|0+(_?0)*)");
 
-    l.insert("<bin_digit>", "([01])");
-    l.insert("<bin_integer>", "(0[bB](_?<bin_digit>)+)");
+	l.insert("<bin_digit>", "([01])");
+	l.insert("<bin_integer>", "(0[bB](_?<bin_digit>)+)");
 
-    l.insert("<oct_digit>", "([0-7])");
-    l.insert("<oct_integer>", "(0[oO](_?<oct_digit>)+)");
+	l.insert("<oct_digit>", "([0-7])");
+	l.insert("<oct_integer>", "(0[oO](_?<oct_digit>)+)");
 
-    l.insert("<hex_digit>", "([0-9a-zA-Z])");
-    l.insert("<hex_integer>", "(0[xX](_?<hex_digit>)+)");
+	l.insert("<hex_digit>", "([0-9a-zA-Z])");
+	l.insert("<hex_integer>", "(0[xX](_?<hex_digit>)+)");
 
-    l.insert("<integer>", "(<bin_integer>|<oct_integer>|<hex_integer>|<dec_integer>)");
+	l.insert("<integer>", "(<bin_integer>|<oct_integer>|<hex_integer>|<dec_integer>)");
 }
 
-void add_float_numbers(Lexer& l) {
-    /* Floating-point literals
+void python::add_float_numbers(Lexer& l) {
+	/* Floating-point literals
 	digitpart     ::=  digit (["_"] digit)*
 
 	fraction      ::=  "." digitpart
@@ -107,9 +164,9 @@ void add_float_numbers(Lexer& l) {
 	pointfloat    ::=  [digitpart] fraction | digitpart "."
 	exponentfloat ::=  (digitpart | pointfloat) exponent
 
-    floatnumber   ::=  pointfloat | exponentfloat
-    imagnumber ::=  (floatnumber | digitpart) ("j" | "J")
-    */
+	floatnumber   ::=  pointfloat | exponentfloat
+	imagnumber ::=  (floatnumber | digitpart) ("j" | "J")
+	*/
 	l.insert("<digit_part>", "(<digit>(_?<digit>)*)");
 
 	l.insert("<fraction>", "(\\.<digit_part>)");
@@ -122,8 +179,8 @@ void add_float_numbers(Lexer& l) {
 	l.insert("<imag_number>", "((<float_number>|<digit_part>)[jJ])");
 }
 
-void add_strings(Lexer& l) {
-    /* String literals
+void python::add_strings(Lexer& l) {
+	/* String literals
 	stringprefix    ::=  "r" | "u" | "R" | "U" | "f" | "F"
 						 | "fr" | "Fr" | "fR" | "FR" | "rf" | "rF" | "Rf" | "RF"
 	stringescapeseq ::=  "\" <any source character>
@@ -136,8 +193,8 @@ void add_strings(Lexer& l) {
 	longstringitem  ::=  longstringchar | stringescapeseq
 	longstring      ::=  "'''" longstringitem* "'''" | '"""' longstringitem* '"""'
 
-    stringliteral   ::=  [stringprefix](shortstring | longstring)
-    */
+	stringliteral   ::=  [stringprefix](shortstring | longstring)
+	*/
 	l.insert("<string_prefix>", "(r|u|R|U|f|F|fr|Fr|fR|FR|rf|rF|Rf|RF)");
 	l.insert("<string_escape_seq>", "(\\\\.)");
 
@@ -151,7 +208,7 @@ void add_strings(Lexer& l) {
 
 	l.insert("<string_literal>", "(<string_prefix>?(<short_string>|<long_string>))");
 
-    /* Byte strings
+	/* Byte strings
 	bytesprefix    ::=  "b" | "B" | "br" | "Br" | "bR" | "BR" | "rb" | "rB" | "Rb" | "RB"
 	bytesescapeseq ::=  "\" <any ASCII character>
 
@@ -163,8 +220,8 @@ void add_strings(Lexer& l) {
 	longbytesitem  ::=  longbyteschar | bytesescapeseq
 	longbytes      ::=  "'''" longbytesitem* "'''" | '"""' longbytesitem* '"""'
 
-    bytesliteral   ::=  bytesprefix(shortbytes | longbytes)
-    */
+	bytesliteral   ::=  bytesprefix(shortbytes | longbytes)
+	*/
 	l.insert("<bytes_prefix>", "(b|B|br|Br|bR|BR|rb|rB|Rb|RB)");
 	l.insert("<bytes_escape_seq>", "(\\\\.)");
 
@@ -179,7 +236,7 @@ void add_strings(Lexer& l) {
 	l.insert("<bytes_literal>", "(<bytes_prefix>?(<short_bytes>|<long_bytes>))");
 }
 
-void add_reserved(Lexer& l) {
+void python::add_reserved(Lexer& l) {
 	l.insert("<keywords>", "(False|await|else|import|pass|None|break|except|in|raise|True|class|finally|is|return|and|continue|for|lambda|try|as|def|from|nonlocal|while|assert|del|global|not|with|async|elif|if|or|yield)");
 	l.insert("<operators>", R"((\+|-|\*|\*\*|/|//|%|@|<<|>>|&|\||\^|~|:=|<|>|<=|>=|==|!=))");
 	l.insert("<delimeters>", R"((\(|\)|\[|\]|\{|\}|,|:|!|\.|;|@|=|->|\+=|-=|\*=|/=|//=|%=|@=|&=|\|=|\^=|>>=|<<=|\*\*=))");
@@ -187,9 +244,9 @@ void add_reserved(Lexer& l) {
 	l.insert("<comment>", "(#.*)");
 }
 
-void add_identifiers(Lexer& l) {
+void python::add_identifiers(Lexer& l) {
 	l.insert("<id_start>", "[a-zA-Z_]");
 	l.insert("<id_continue>", "[0-9a-zA-z_]");
-	l.insert("<identifier>", "<id_start><id_continue>*");
+	l.insert("<identifier>", "(<id_start><id_continue>*)");
 }
 
