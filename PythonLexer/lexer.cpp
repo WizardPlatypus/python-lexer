@@ -2,23 +2,17 @@
 #include "escape.hpp"
 #include <sstream>
 
-std::string colorize(const std::string& text, std::vector<Match>& matches) {
-	std::unordered_map<std::string, int> bg;
-	int bg_min = 41;
-	int bg_max = 46;
-	int bg_offset = 0;
+std::string colorize(const std::string& text, const std::vector<Match>& matches, const std::unordered_map<std::string, Format>& colors) {
 	int cursor = 0;
 	std::ostringstream buffer;
 	for (const auto& m : matches) {
-		if (!bg.contains(m.label)) {
-			bg[m.label] = bg_min + bg_offset;
-			bg_offset += 1;
-			if (bg_min + bg_offset > bg_max) {
-				bg_offset = 0;
-			}
-		}
 		buffer << text.substr(cursor, m.pos - cursor);
-		buffer << format(text.substr(m.pos, m.len), (int)ansi::fg::iso::DEFAULT, bg[m.label]);
+		if (colors.contains(m.label)) {
+			buffer << colors.at(m.label).format(text.substr(m.pos, m.len));
+		}
+		else {
+			buffer << text.substr(m.pos, m.len);
+		}
 		cursor = m.pos + m.len;
 	}
 	if (cursor < text.size()) {

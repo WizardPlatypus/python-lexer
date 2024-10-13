@@ -1,7 +1,9 @@
+#pragma once
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <regex>
+#include "escape.hpp"
 
 struct Match {
 	std::string label;
@@ -9,7 +11,7 @@ struct Match {
 	long long len;
 };
 
-std::string colorize(const std::string&, std::vector<Match>&);
+std::string colorize(const std::string&, const std::vector<Match>&, const std::unordered_map<std::string, Format>&);
 
 struct Anchor {
 	std::string name;

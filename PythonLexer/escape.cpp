@@ -2,14 +2,20 @@
 #include <sstream>
 #include <iostream>
 
-std::string format(std::string text, int fg, int bg, int mode) {
+Format::Format(int fg, int bg, int mode) {
+	this->fg = fg;
+	this->bg = bg;
+	this->mode = mode;
+}
+
+std::string Format::format(const std::string& text) const {
 	std::ostringstream s;
 	s << ansi::CSI;
-	s << mode;
+	s << this->mode;
 	s << ';';
-	s << bg;
+	s << this->bg;
 	s << ';';
-	s << fg;
+	s << this->fg;
 	s << 'm';
 	s << text;
 	s << ansi::CSI;
@@ -17,7 +23,7 @@ std::string format(std::string text, int fg, int bg, int mode) {
 	return s.str();
 }
 
-void display() {
+void ansi::display() {
 	/*
 	Name            FG  BG
 	Black           30  40

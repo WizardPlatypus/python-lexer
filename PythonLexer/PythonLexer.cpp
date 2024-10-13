@@ -88,6 +88,35 @@ bool test_lexer() {
 	return true;
 }
 
+std::vector<Format> good_colors() {
+	std::vector<Format> colors = {
+		Format(30, 41, 3),
+		Format(30, 42, 3),
+		Format(30, 43, 3),
+		Format(30, 44, 3),
+		Format(30, 45, 3),
+		Format(30, 46, 3),
+		Format(30, 47, 3),
+
+		Format(30, 101, 3),
+		Format(30, 102, 3),
+		Format(30, 103, 3),
+		Format(30, 104, 3),
+		Format(30, 105, 3),
+		Format(30, 106, 3),
+		Format(30, 107, 3),
+	};
+	return colors;
+}
+
+std::unordered_map<std::string, Format> assign(std::vector<std::string> labels, std::vector<Format> colors) {
+	std::unordered_map<std::string, Format> m;
+	for (int i = 0; i < labels.size(); ++i) {
+		m.insert({ labels[i], colors[i % colors.size()] });
+	}
+	return m;
+}
+
 // https://docs.python.org/3/reference/lexical_analysis.html
 int main()
 {
@@ -108,9 +137,16 @@ int main()
 	}
 
 	auto lexem = l["<lexem>"];
+
+	std::vector<std::string> labels;
+	for (const auto& a : lexem.anchors) {
+		labels.push_back(a.name);
+	}
+	auto assigned = assign(labels, good_colors());
+
 	auto matches = lexem.match(text);
 	std::cout << "Found " << matches.size() << std::endl;
-	std::cout << colorize(text, matches);
+	std::cout << colorize(text, matches, assigned);
 #endif
 }
 

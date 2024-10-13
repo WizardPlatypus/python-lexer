@@ -1,7 +1,10 @@
+#pragma once
 #include <string>
 #include <cstdint>
 
 namespace ansi {
+	void display();
+
 	const static std::string ESC = "\033";
 	const static std::string CSI = "\033[";
 
@@ -68,5 +71,12 @@ namespace ansi {
 	}
 }
 
-std::string format(std::string text, int fg = (int)ansi::fg::iso::DEFAULT, int bg = (int)ansi::bg::iso::DEFAULT, int mode = (int)ansi::mode::BOLD);
-void display();
+struct Format {
+	Format(int fg = (int)ansi::fg::iso::DEFAULT, int bg = (int)ansi::bg::iso::DEFAULT, int mode = (int)ansi::mode::BOLD);
+	std::string format(const std::string&) const;
+
+	int fg;
+	int bg;
+	int mode;
+};
+
