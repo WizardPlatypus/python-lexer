@@ -1,6 +1,5 @@
 #include "escape.hpp"
 #include <sstream>
-#include <iostream>
 
 Format::Format(int fg, int bg, int mode) {
 	this->fg = fg;

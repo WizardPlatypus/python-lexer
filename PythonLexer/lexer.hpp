@@ -1,9 +1,9 @@
 #pragma once
+#include "escape.hpp"
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <regex>
-#include "escape.hpp"
 
 struct Match {
 	std::string label;

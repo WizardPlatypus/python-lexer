@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <cstdint>
 
 namespace ansi {
 	void display();
@@ -8,7 +7,7 @@ namespace ansi {
 	const static std::string ESC = "\033";
 	const static std::string CSI = "\033[";
 
-	enum class mode : uint8_t {
+	enum class mode : char {
 		RESET = 0,
 		BOLD = 1,
 		DIM = 2,
@@ -21,7 +20,7 @@ namespace ansi {
 	};
 
 	namespace fg {
-		enum class iso : uint8_t {
+		enum class iso : char {
 			BLACK = 30,
 			RED = 31,
 			GREEN = 32,
@@ -33,7 +32,7 @@ namespace ansi {
 			DEFAULT = 39,
 		};
 
-		enum class bold : uint8_t {
+		enum class bold : char {
 			BLACK = 90,
 			RED = 91,
 			GREEN = 92,
@@ -46,7 +45,7 @@ namespace ansi {
 	}
 
 	namespace bg {
-		enum class iso : uint8_t {
+		enum class iso : char {
 			BLACK = 40,
 			RED = 41,
 			GREEN = 42,
@@ -58,7 +57,7 @@ namespace ansi {
 			DEFAULT = 49,
 		};
 
-		enum class bold : uint8_t {
+		enum class bold : char {
 			BLACK = 100,
 			RED = 101,
 			GREEN = 102,
