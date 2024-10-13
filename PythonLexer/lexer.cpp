@@ -21,6 +21,32 @@ std::string colorize(const std::string& text, const std::vector<Match>& matches,
 	return buffer.str();
 }
 
+std::string Lexem::display(const std::string& name, const std::unordered_map<std::string, Format>& colors) const {
+	std::ostringstream buffer;
+	if (colors.contains(name)) {
+		buffer << colors.at(name).format(name);
+	} else {
+		buffer << name;
+	}
+	buffer << " ::= ";
+
+	std::regex ref("<[a-zA-Z0-9_]+>");
+
+	auto xbegin = std::sregex_iterator(this->spec.begin(), this->spec.end(), ref);
+	auto xend = std::sregex_iterator();
+
+	std::vector<Match> matches;
+	for (auto i = xbegin; i != xend; i++) {
+		auto match = *i;
+		auto label = match.str();
+		matches.push_back(Match{ label, match.position(), (long long)label.size() });
+	}
+
+	buffer << colorize(this->spec, matches, colors);
+
+	return buffer.str();
+}
+
 Lexer::Lexer() {
 	std::unordered_map<std::string, Lexem> empty;
 	this->lexems = empty;

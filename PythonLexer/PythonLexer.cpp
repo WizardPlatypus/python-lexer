@@ -77,7 +77,7 @@ bool test_lexer() {
 		}
 		/*
 		if (match[decimal.anchors[1].pos].str() != matches[ptr].substr(1)) {
-			std::cerr << "Wrong <b>: " << match[decimal.anchors[0].pos].str() << std::endl;
+			std::cerr << "Wrong <b>: " << match[decimal.anchors[1].pos].str() << std::endl;
 			return false;
 		}
 		// */
@@ -120,7 +120,7 @@ std::unordered_map<std::string, Format> assign(std::vector<std::string> labels, 
 // https://docs.python.org/3/reference/lexical_analysis.html
 int main()
 {
-#if 0
+#if 1
 	test_lexer();
 #else
 	std::ostringstream buffer;
@@ -145,8 +145,17 @@ int main()
 	auto assigned = assign(labels, good_colors());
 
 	auto matches = lexem.match(text);
+
 	std::cout << "Found " << matches.size() << std::endl;
+	std::cout << std::endl;
+
 	std::cout << colorize(text, matches, assigned);
+	std::cout << std::endl;
+
+	for (const auto& [label, xem] : l.lexems) {
+		std::cout << xem.display(label, assigned) << std::endl;
+	}
+	std::cout << std::endl;
 #endif
 }
 

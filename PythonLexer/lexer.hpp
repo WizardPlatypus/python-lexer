@@ -20,11 +20,13 @@ struct Anchor {
 
 class Lexem {
 public:
+	std::vector<Match> match(std::string);
+	std::string display(const std::string&, const std::unordered_map<std::string, Format>&) const;
+
 	std::string spec;
 	std::string regex;
 	std::regex x;
 	std::vector<Anchor> anchors;
-	std::vector<Match> match(std::string);
 };
 
 class Lexer {
@@ -32,7 +34,6 @@ public:
 	Lexer();
 	bool insert(std::string, std::string);
 	Lexem& operator[](std::string);
-private:
 	std::unordered_map<std::string, Lexem> lexems;
 };
 
