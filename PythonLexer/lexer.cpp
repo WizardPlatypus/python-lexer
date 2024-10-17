@@ -168,7 +168,7 @@ void python::add_integers(Lexer& l) {
 	l.insert("<oct_digit>", "([0-7])");
 	l.insert("<oct_integer>", "(0[oO](_?<oct_digit>)+)");
 
-	l.insert("<hex_digit>", "([0-9a-zA-Z])");
+	l.insert("<hex_digit>", "([0-9a-fA-F])");
 	l.insert("<hex_integer>", "(0[xX](_?<hex_digit>)+)");
 
 	l.insert("<integer>", "(<bin_integer>|<oct_integer>|<hex_integer>|<dec_integer>)");
